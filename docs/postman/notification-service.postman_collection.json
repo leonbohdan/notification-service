@@ -1,0 +1,188 @@
+{
+  "info": {
+    "_postman_id": "e8d6c7b1-9f2a-4a6c-b3e1-7d9a8c4f2b10",
+    "name": "Notification Service API",
+    "description": "Postman-колекція для тестування Notification Service (Завдання 1, День 10)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3002",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "Перевірка працездатності мікросервісу (використовується для Docker healthcheck)"
+      },
+      "response": [
+        {
+          "name": "Successful Health Check",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"uptime\": 42.15,\n  \"timestamp\": \"2026-09-12T10:00:00.000Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Send Notification (Success)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"ord-12345\",\n  \"customerEmail\": \"customer@example.com\",\n  \"message\": \"Ваше замовлення #ord-12345 успішно оформлено!\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/notifications/send",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications",
+            "send"
+          ]
+        },
+        "description": "Синхронний виклик для відправки email-сповіщення клієнту"
+      },
+      "response": [
+        {
+          "name": "Notification Sent",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"ord-12345\",\n  \"customerEmail\": \"customer@example.com\",\n  \"message\": \"Ваше замовлення #ord-12345 успішно оформлено!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notifications/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "send"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"SENT\",\n  \"orderId\": \"ord-12345\",\n  \"sentAt\": \"2026-09-12T10:00:00.000Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Send Notification (Validation Error)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"\",\n  \"customerEmail\": \"not-an-email\",\n  \"message\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/notifications/send",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications",
+            "send"
+          ]
+        },
+        "description": "Перевірка валідації DTO через class-validator (повинна повертати 400 Bad Request)"
+      },
+      "response": [
+        {
+          "name": "Bad Request",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"\",\n  \"customerEmail\": \"not-an-email\",\n  \"message\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notifications/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "send"]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"message\": [\n    \"orderId should not be empty\",\n    \"customerEmail must be an email\",\n    \"message should not be empty\"\n  ],\n  \"error\": \"Bad Request\",\n  \"statusCode\": 400\n}"
+        }
+      ]
+    }
+  ]
+}

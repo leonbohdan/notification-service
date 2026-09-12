@@ -1,0 +1,93 @@
+version: '3.8'
+
+networks:
+  microservices_net:
+    driver: bridge
+
+services:
+  postgres-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_db
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U user -d order_db']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
+  mongodb:
+    image: mongo:7.0
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - microservices_net
+
+  notification-service:
+    container_name: notification-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3002:3002'
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - microservices_net
+
+  insight-pulse-service:
+    build:
+      context: ./insight-pulse-service
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/insight_pulse
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - microservices_net
+
+  order-inventory-service:
+    build:
+      context: ./order-inventory-service
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://user:password@postgres-db:5432/order_db
+      ANALYTICS_SERVICE_URL: http://insight-pulse-service:3001
+      NOTIFICATION_SERVICE_URL: http://notification-service:3002
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microservices_net
