@@ -4,10 +4,12 @@ import { UpdateNotificationDto } from './dto/update-notification.dto.js';
 
 @Injectable()
 export class NotificationsService {
-  create(createNotificationDto: CreateNotificationDto) {
+  async create(createNotificationDto: CreateNotificationDto) {
     console.log(
       `[Notification] 📩 Creating notification for order #${createNotificationDto.orderId} to ${createNotificationDto.customerEmail}: "${createNotificationDto.message}"`,
     );
+
+    // await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 seconds delay
 
     return {
       status: 'SENT',

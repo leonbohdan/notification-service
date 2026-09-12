@@ -201,3 +201,5 @@ docker logs -f notification-service
 
 Detailed task descriptions, cascading failure experiments, and architectural analysis are documented in:
 - [docs/task-1.md](docs/task-1.md) — *Day 10: Event-Driven — Docker Compose Network & Microservices Architecture*.
+- [docs/task-1-summary.md](docs/task-1-summary.md) — *Summary, Redis Architecture, Lessons Learned & Scaling*.
+- [docs/postman/notification-service.postman_collection.json](docs/postman/notification-service.postman_collection.json) — *Postman Collection for API Testing*.
