@@ -10,10 +10,25 @@ import {
 import { NotificationsService } from './notifications.service.js';
 import { CreateNotificationDto } from './dto/create-notification.dto.js';
 import { UpdateNotificationDto } from './dto/update-notification.dto.js';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
+
+  @EventPattern<string>('order_created')
+  async handleOrderCreated(@Payload() data: any, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      console.log('Отримано подію order_created:', data);
+
+      channel.ack(originalMsg);
+    } catch (error) {
+      channel.nack(originalMsg, false, false);
+    }
+  }
 
   @Post('send')
   create(@Body() createNotificationDto: CreateNotificationDto) {
