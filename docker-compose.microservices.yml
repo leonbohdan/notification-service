@@ -10,7 +10,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-order_db}
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-order_db}']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-order_db}',
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -40,6 +44,23 @@ services:
     networks:
       - microservices_net
 
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq_broker
+    ports:
+      - '5672:5672' # AMQP protocol for services
+      - '15672:15672' # Management Web UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'check_port_connectivity']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
   notification-service:
     container_name: notification-service
     build:
@@ -52,8 +73,11 @@ services:
       REDIS_HOST: ${REDIS_HOST:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       NOTIFICATION_QUEUE_NAME: ${NOTIFICATION_QUEUE_NAME:-queue:notifications}
+      RABBITMQ_URL: ${RABBITMQ_URL}
     depends_on:
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - microservices_net

@@ -1,9 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672'],
+      queue: 'orders_queue',
+      noAck: false,
+      queueOptions: {
+        durable: true,
+        arguments: {
+          'x-dead-letter-exchange': 'orders.dlx',
+          'x-dead-letter-routing-key': 'orders.dead_letter',
+        },
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
 
   app.useGlobalPipes(
     new ValidationPipe({
