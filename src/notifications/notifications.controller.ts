@@ -10,7 +10,14 @@ import {
 import { NotificationsService } from './notifications.service.js';
 import { CreateNotificationDto } from './dto/create-notification.dto.js';
 import { UpdateNotificationDto } from './dto/update-notification.dto.js';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+  KafkaContext,
+} from '@nestjs/microservices';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -44,6 +51,29 @@ export class NotificationsController {
 
       channel.nack(originalMsg, false, false);
     }
+  }
+
+  @MessagePattern('order.status-changed')
+  async handleOrderStatusChanged(
+    @Payload() message: any,
+    @Ctx() context: KafkaContext,
+  ) {
+    const rawMsg = context.getMessage();
+    const partition = context.getPartition();
+    const offset = rawMsg.offset;
+    const key = rawMsg.key?.toString(); // Key as buffer in Kafka
+
+    console.log(
+      `[Kafka Consumer] 📥 Received event:`,
+      `Partition: ${partition} | Offset: ${offset} | Key: ${key} | Status: ${message?.status}`,
+    );
+
+    // Here you can call notificationsService or save logic if needed
+  }
+
+  @Post('test-flow/:orderId')
+  async testFlow(@Param('orderId') orderId: string) {
+    return this.notificationsService.testOrderFlow(orderId);
   }
 
   @Post('send')
