@@ -14,6 +14,10 @@ async function bootstrap() {
       noAck: false,
       queueOptions: {
         durable: true,
+        arguments: {
+          'x-dead-letter-exchange': 'orders.dlx',
+          'x-dead-letter-routing-key': 'orders.dead_letter',
+        },
       },
     },
   });
