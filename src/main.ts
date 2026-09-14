@@ -22,6 +22,19 @@ async function bootstrap() {
     },
   });
 
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+      },
+      consumer: {
+        groupId: 'notification-kafka-group',
+        allowAutoTopicCreation: true,
+      },
+    },
+  });
+
   await app.startAllMicroservices();
 
   app.useGlobalPipes(

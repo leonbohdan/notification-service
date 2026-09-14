@@ -183,6 +183,56 @@
           "body": "{\n  \"message\": [\n    \"orderId should not be empty\",\n    \"customerEmail must be an email\",\n    \"message should not be empty\"\n  ],\n  \"error\": \"Bad Request\",\n  \"statusCode\": 400\n}"
         }
       ]
+    },
+    {
+      "name": "Kafka Test Order Flow",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/test-flow/:orderId",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications",
+            "test-flow",
+            ":orderId"
+          ],
+          "variable": [
+            {
+              "key": "orderId",
+              "value": "order-101",
+              "description": "ID замовлення (використовується як Partition Key у Kafka)"
+            }
+          ]
+        },
+        "description": "Тестування відправки подій статусу замовлення у Kafka (CREATED -> PAID -> SHIPPED) із збереженням порядку за Partition Key"
+      },
+      "response": [
+        {
+          "name": "Events Emitted",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/test-flow/order-101",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "test-flow", "order-101"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"message\": \"Events for order order-101 successfully sent\",\n  \"statuses\": [\n    \"CREATED\",\n    \"PAID\",\n    \"SHIPPED\"\n  ]\n}"
+        }
+      ]
     }
   ]
 }
