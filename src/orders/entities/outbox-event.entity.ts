@@ -19,18 +19,18 @@ export class OutboxEvent {
   id: string;
 
   @Column()
-  aggregateType: string; // Наприклад: 'Order'
+  aggregateType: string; // For example: 'Order'
 
   @Column()
-  aggregateId: string; // ID сутності, якої стосується подія
+  aggregateId: string; // ID of the entity the event relates to
 
   @Column()
-  eventType: string; // Наприклад: 'ORDER_CREATED'
+  eventType: string; // For example: 'ORDER_CREATED'
 
   @Column('jsonb')
-  payload: Record<string, any>; // Тіло події у форматі JSON
+  payload: Record<string, any>; // Event body in JSON format
 
-  @Index() // Індекс необхідний для швидкої вибірки воркером у Завданні 2!
+  @Index() // Index required for fast selection by the worker in Task 2!
   @Column({
     type: 'enum',
     enum: OutboxStatus,

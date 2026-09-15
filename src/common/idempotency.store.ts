@@ -1,13 +1,13 @@
 import { createHash } from 'node:crypto';
 
 export class IdempotencyStore {
-  // Зберігаємо hash -> timestamp закінчення терміну дії (TTL)
+  // Save hash -> expiration timestamp (TTL)
   private readonly store = new Map<string, number>();
 
-  constructor(private readonly defaultTtlMs = 120_000) {} // 2 хвилини за замовчуванням
+  constructor(private readonly defaultTtlMs = 120_000) {} // 2 minutes by default
 
   /**
-   * Створює детермінований SHA-256 хеш з будь-якого об'єкта
+   * Create a deterministic SHA-256 hash from any object
    */
   public generateHash(payload: unknown): string {
     const sortedString = JSON.stringify(payload, (_, val) =>
@@ -25,7 +25,7 @@ export class IdempotencyStore {
   }
 
   /**
-   * Перевіряє, чи подія з таким хешем уже оброблялася
+   * Check if an event with this hash has already been processed
    */
   public has(key: string): boolean {
     const expiry = this.store.get(key);
@@ -39,7 +39,7 @@ export class IdempotencyStore {
   }
 
   /**
-   * Фіксує обробку події у сховищі з TTL
+   * Fixes the processing of an event in the store with TTL
    */
   public set(key: string, ttlMs: number = this.defaultTtlMs): void {
     this.store.set(key, Date.now() + ttlMs);
