@@ -233,6 +233,134 @@
           "body": "{\n  \"message\": \"Events for order order-101 successfully sent\",\n  \"statuses\": [\n    \"CREATED\",\n    \"PAID\",\n    \"SHIPPED\"\n  ]\n}"
         }
       ]
+    },
+    {
+      "name": "Create Order (Transactional Outbox)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerEmail\": \"student@example.com\",\n  \"totalPrice\": 1250.00\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "orders"
+          ]
+        },
+        "description": "Створення замовлення з атомарним збереженням події в таблицю outbox_events (Завдання 1, День 13)"
+      },
+      "response": [
+        {
+          "name": "Order Created with Outbox Event",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerEmail\": \"student@example.com\",\n  \"totalPrice\": 1250.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"id\": \"b3c69f2e-4b68-45e3-982f-2d85b14f6e10\",\n  \"customerEmail\": \"student@example.com\",\n  \"totalPrice\": 1250,\n  \"status\": \"CREATED\",\n  \"createdAt\": \"2026-09-15T09:30:00.000Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Order (Validation Error)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerEmail\": \"invalid-email\",\n  \"totalPrice\": -50\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "orders"
+          ]
+        },
+        "description": "Перевірка валідації DTO створення замовлення (повинна повертати 400 Bad Request)"
+      },
+      "response": [
+        {
+          "name": "Bad Request",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerEmail\": \"invalid-email\",\n  \"totalPrice\": -50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"message\": [\n    \"customerEmail must be an email\",\n    \"totalPrice must not be less than 0.01\"\n  ],\n  \"error\": \"Bad Request\",\n  \"statusCode\": 400\n}"
+        }
+      ]
     }
   ]
 }
