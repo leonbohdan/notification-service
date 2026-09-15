@@ -9,9 +9,9 @@ export class OrdersService {
   constructor(private readonly dataSource: DataSource) {}
 
   async createOrder(createOrderDto: CreateOrderDto) {
-    // Відкриваємо єдину атомарну транзакцію в PostgreSQL
+    // Open one single atomic transaction in PostgreSQL
     return this.dataSource.transaction(async (manager) => {
-      // 1. Створюємо і зберігаємо сутність Замовлення
+      // 1. Create and save the Order entity
       const order = manager.create(Order, {
         customerEmail: createOrderDto.customerEmail,
         totalPrice: createOrderDto.totalPrice,
@@ -19,7 +19,7 @@ export class OrdersService {
       });
       const savedOrder = await manager.save(Order, order);
 
-      // 2. У ТІЙ САМІЙ ТРАНЗАКЦІЇ зберігаємо подію в таблицю outbox_events!
+      // 2. Save the event to the outbox_events table in the same transaction!
       const outboxEvent = manager.create(OutboxEvent, {
         aggregateType: 'Order',
         aggregateId: savedOrder.id,
@@ -33,8 +33,8 @@ export class OrdersService {
       });
       await manager.save(OutboxEvent, outboxEvent);
 
-      // Якщо на цьому моменті вимкнеться живлення — нічого не запишеться (Rollback).
-      // Якщо запишеться — то гарантовано обидва записи (Commit)!
+      // If power goes out at this point - nothing will be written (Rollback).
+      // If it is written - then both records are guaranteed (Commit)!
       return savedOrder;
     });
   }
